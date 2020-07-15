@@ -1,7 +1,7 @@
 //Try and implement dynamic programming to make efficiency the same for each function
 
 
-function getCollege(collegeName){
+function getCollege(collegeName) {
   var parsedName = collegeName.toLowerCase()
   parsedName = parsedName.replace(' ','-')
   if(CacheService.getDocumentCache().get(parsedName + "1") != null){
@@ -18,7 +18,7 @@ function getCollege(collegeName){
   return page
 }
 
-function acceptRates(college){
+function acceptRates(college) {
   var page = getCollege(college)
   var x = page.indexOf('<section class="block--two-two" aria-label="Admissions" id="admissions">')
   var section = page.substring(x,x+3679)
@@ -26,8 +26,20 @@ function acceptRates(college){
   section = section.substring(x,x+206)
   x = section.indexOf('<div class="scalar__value"><span>')
   var y = section.indexOf('</span></div></div></div>')
-  acceptanceRate = section.substring(x + 33,y)
+  var acceptanceRate = section.substring(x + 33,y)
   return acceptanceRate
+}
+
+function SATRange(college){
+  var page = getCollege(college)
+  var x = page.indexOf('<section class="block--two-two" aria-label="Admissions" id="admissions">')
+  var section = page.substring(x,x+3679)
+  x = section.indexOf('<span>SAT Range</span>')
+  section = section.substring(x,x + 89)
+  x = indexOf('<div class="scalar__label"><span>')
+  var y = indexOf('</span></div><div')
+  var sat = section.substring(x + 33,y) 
+  return sat
 }
 
 function scrapeAll(college) {
