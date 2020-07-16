@@ -14,7 +14,7 @@ function betterFetch(url,retries){
       Utilities.sleep(20)
     }
   }
-  throw "Website failed to resolve after " + retries.toString() + " tries"
+  throw "Website failed to resolve after " + retries.toString() + " tries if you are having a lot of trouble try running =getCollege(name) to cache the webpage before using this"
 }
 
 function parseTxtToNum(text,beforeText,numChar){
@@ -56,11 +56,8 @@ function getCollege(collegeName){
 
     temp = page.substring(0,99999)
     CacheService.getDocumentCache().put(parsedName + "1", temp)
-    if(page.length > 100000){
-    }
     temp = page.substring(100000,)
-      CacheService.getDocumentCache().put(parsedName + "2", temp)
-
+    CacheService.getDocumentCache().put(parsedName + "2", temp)
   }
   return page
 }
@@ -111,6 +108,18 @@ function SATRange(college){
   return sat
 }
 
+function ACTRange(college){
+  // Could probably simplify this because it is largely copied from the SATRange function
+  var page = getCollege(college)
+  var beforeText = '<section class="block--two-two" aria-label="Admissions" id="admissions">'
+  page = parseTxtToNum(page,beforeText,7000)
+  beforeText = '<span>ACT Range</span>'
+  page = parseTxtToNum(page,beforeText,100)
+  beforeText = '<div class="scalar__value"><span>'
+  var afterText = '</span></div></div>'
+  var act = parseTxtToTxt(page,beforeText,afterText)
+  return act
+}
 
 function scrapeAll(college) {
 
