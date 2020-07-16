@@ -10,9 +10,32 @@ function betterFetch(url,retries){
     if(data.getResponseCode() == 200){
       return data.getContentText()
     }
+    else{
+      Utilities.sleep(20)
+    }
   }
   throw "Website failed to resolve after " + retries.toString() + " tries"
 }
+
+function parseTxtToNum(text,beforeText,numChar){
+  var x = text.indexOf(beforeText)
+  var parseText = text.substring(x,x + numChar)
+  return parseText
+}
+
+function parseTxtToTxt(text,beforeText,afterText){
+  var x = text.indexOf(beforeText) + beforeText.length
+  var y = text.indexOf(afterText)
+  if(x == -1){
+    throw "Couldn't find text " + beforeText
+  }
+  if(y == -1){
+    throw "Couldn't find text " + afterText
+  }
+  var parseText = text.substring(x,y)
+  return parseText
+}
+
 
 function getCollege(collegeName){
   var parsedName = collegeName.toLowerCase()
@@ -33,17 +56,13 @@ function getCollege(collegeName){
     if(page.length > 100000){
     }
     temp = page.substring(100000,)
-    try{
       CacheService.getDocumentCache().put(parsedName + "2", temp)
-    }
-    catch(error){
-      throw page.length + error
-    }
+
   }
   return page
 }
 
-//This clears the data that is already stored on the colleges
+// This clears the data that is already stored on the colleges
 // It's not the best implementation but there is no easier way to do it
 
 function forceResetCaches(college){
@@ -58,13 +77,21 @@ function forceResetCaches(college){
 
 function acceptRates(college){
   var page = getCollege(college)
-  var x = page.indexOf('<section class="block--two-two" aria-label="Admissions" id="admissions">')
-  var section = page.substring(x,x+3679)
-  x = section.indexOf('<div class="profile__bucket--2">')
-  section = section.substring(x,x+206)
-  x = section.indexOf('<div class="scalar__value"><span>')
-  var y = section.indexOf('</span></div></div></div>')
-  var acceptanceRate = section.substring(x + 33,y)
+  var beforeText = '<section class="block--two-two" aria-label="Admissions" id="admissions">'
+  page = parseTxtToNum(page,beforeText,7000)
+  // Could do this whole thing in a for loop
+  const bucketBase = '<div class="profile__bucket--'
+  for( i = 1; i <= 2; i ++){
+    bucket = parseTxtToTxt(page,bucketBase + i.toString(),bucketBase + (i+1).toString())
+    if(bucket.includes("%")){
+      beforeText = '<div class="profile__bucket--' + i.toString() + '">'
+      break
+    }
+  }
+  page = parseTxtToNum(page,beforeText,206)
+  beforeText = '<div class="scalar__value"><span>'
+  var afterText = '</span></div></div></div>'
+  var acceptanceRate = parseTxtToTxt(page,beforeText,afterText)
   return acceptanceRate
 }
 
@@ -81,16 +108,5 @@ function SATRange(college){
 }
 
 function scrapeAll(college) {
-  var parsedCollege = college.toLowerCase()
-  parsedCollege = parsedCollege.replace(" ","-")
-  var url = "https://www.niche.com/colleges/" + parsedCollege + "/"
-  var page = UrlFetchApp.fetch(url).getContentText()
-  var x = page.indexOf('<section class="block--two-two" aria-label="Admissions" id="admissions">')
-  var section = page.substring(x,x+3679)
-  x = section.indexOf('<div class="profile__bucket--2">')
-  section = section.substring(x,x+206)
-  x = section.indexOf('<div class="scalar__value">')
-  var y = section.indexOf('</span></div></div></div>')
-  acceptanceRate = section.substring(x + 33,y)
-  return acceptanceRate
+
 }
