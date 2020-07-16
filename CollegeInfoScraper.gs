@@ -1,6 +1,19 @@
 // A program I created because I was too lazy to pull the data from the website Niche.com manually
 // It automates it but it's (relatively) thrown together so it could be improved
 
+function betterFetch(url,retries){
+  options = {
+    'muteHttpExceptions':true
+  }
+  for(i = 0; i < retries; i ++){
+    data = UrlFetchApp.fetch(url,options)
+    if(data.getResponseCode() == 200){
+      return data.getContentText()
+    }
+  }
+  throw "Website failed to resolve after " + retries.toString() + " tries"
+}
+
 function getCollege(collegeName){
   var parsedName = collegeName.toLowerCase()
   parsedName = parsedName.replace(' ','-')
@@ -9,12 +22,7 @@ function getCollege(collegeName){
     page = temp + CacheService.getDocumentCache().get(parsedName + "2")
   } else{
     var url = "https://www.niche.com/colleges/" + parsedName + "/"
-    try{
-      var page = UrlFetchApp.fetch(url).getContentText()
-    }
-    catch(err){
-      throw url
-    }
+    var page = betterFetch(url,5)
     ind = page.indexOf('<div class="platform__wrapper" id="app">') + 40
     page = page.substring(ind,)
     ind = page.indexOf('<footer class="footer"><div class="footer__container">')
@@ -41,7 +49,6 @@ function getCollege(collegeName){
 function forceResetCaches(college){
   var parsedName = college.toLowerCase()
   parsedName = parsedName.replace(' ','-')
-  
   firstKey = parsedName + "1"
   secondKey = parsedName + "2"
   CacheService.getDocumentCache().remove(firstKey)
