@@ -18,6 +18,9 @@ function betterFetch(url,retries){
 }
 
 function parseTxtToNum(text,beforeText,numChar){
+  if(typeof(text) != "string"){
+    throw "The text is supposed to be a string instead it is a " + typeof(text)
+  }
   var x = text.indexOf(beforeText)
   var parseText = text.substring(x,x + numChar)
   return parseText
@@ -79,15 +82,16 @@ function acceptRates(college){
   var page = getCollege(college)
   var beforeText = '<section class="block--two-two" aria-label="Admissions" id="admissions">'
   page = parseTxtToNum(page,beforeText,7000)
-  // Could do this whole thing in a for loop
+  
   const bucketBase = '<div class="profile__bucket--'
   for( i = 1; i <= 2; i ++){
-    bucket = parseTxtToTxt(page,bucketBase + i.toString(),bucketBase + (i+1).toString())
+    var bucket = parseTxtToTxt(page,bucketBase + i.toString(),bucketBase + (i+1).toString())
     if(bucket.includes("%")){
       beforeText = '<div class="profile__bucket--' + i.toString() + '">'
       break
     }
   }
+  
   page = parseTxtToNum(page,beforeText,206)
   beforeText = '<div class="scalar__value"><span>'
   var afterText = '</span></div></div></div>'
@@ -97,15 +101,16 @@ function acceptRates(college){
 
 function SATRange(college){
   var page = getCollege(college)
-  var x = page.indexOf('<section class="block--two-two" aria-label="Admissions" id="admissions">')
-  var section = page.substring(x,x+3679)
-  x = section.indexOf('<span>SAT Range</span>')
-  section = section.substring(x,x + 122)
-  x = section.indexOf('<div class="scalar__value"><span>')
-  var y = section.indexOf('</span></div></div>')
-  var sat = section.substring(x + 33,y) 
+  var beforeText = '<section class="block--two-two" aria-label="Admissions" id="admissions">'
+  page = parseTxtToNum(page,beforeText,7000)
+  beforeText = '<span>SAT Range</span>'
+  page = parseTxtToNum(page,beforeText,122)
+  beforeText = '<div class="scalar__value"><span>'
+  var afterText = '</span></div></div>'
+  var sat = parseTxtToTxt(page,beforeText,afterText)
   return sat
 }
+
 
 function scrapeAll(college) {
 
